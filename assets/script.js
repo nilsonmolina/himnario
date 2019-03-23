@@ -134,7 +134,7 @@ const Controller = (function IIFE(ui) {
   async function generatePlaylist() {
     const list = ui.playlist.getList();
     await downloadSlides(list);
-    ui.slides.start(state.slides);
+    ui.slides.start(state.slides[0]);
     state.playing = true;
     ui.playlist.clear();
   }
