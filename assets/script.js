@@ -62,24 +62,15 @@ const View = (function IIFE() {
 
   const slides = {
     div: document.querySelector('.slides'),
+    img: document.querySelector('.slides .img'),
 
-    start(imgs) {
-      this.div.innerHTML = '';
-      let html = '';
-      imgs.forEach((img) => { html += `<img src="${img}" />`; });
-      this.div.innerHTML = html;
-      this.div.firstChild.style.zIndex = 100;
+    start(img) {
+      this.setImg(img);
       this.show();
     },
 
-    next(index) {
-      this.div.childNodes[index].style.zIndex = 100;
-      this.div.childNodes[index - 1].style.zIndex = 10;
-    },
-
-    prev(index) {
-      this.div.childNodes[index].style.zIndex = 100;
-      this.div.childNodes[index + 1].style.zIndex = 10;
+    setImg(img) {
+      this.img.style.backgroundImage = `url(${img})`;
     },
 
     hide() { this.div.style.display = 'none'; },
@@ -120,7 +111,7 @@ const Controller = (function IIFE(ui) {
   ui.hymnSearch.suggestions.addEventListener('click', addToPlaylist);
   ui.playlist.div.addEventListener('click', removeFromPlaylist);
   ui.playlist.play.addEventListener('click', generatePlaylist);
-  document.addEventListener('keydown', controls);
+  document.addEventListener('keyup', controls);
 
   /*------------------------
     Event Listener Functions
@@ -152,9 +143,9 @@ const Controller = (function IIFE(ui) {
     if (!state.playing) return;
     if (e.keyCode === 32 || e.keyCode === 39) {
       if (state.current >= state.slides.length - 1) reset();
-      else ui.slides.next(++state.current);
+      else ui.slides.setImg(state.slides[++state.current]);
     } else if (e.keyCode === 37 && state.current > 0) {
-      ui.slides.prev(--state.current);
+      ui.slides.setImg(state.slides[--state.current]);
     }
   }
 
@@ -170,7 +161,6 @@ const Controller = (function IIFE(ui) {
 
   function downloadSlides(hymns) {
     const urls = [];
-
     for (const hymn of hymns) {
       const baseURL = `${state.endpoint}/lyrics/${hymn.path}`;
       for (let i = 1; i < hymn.count; i++) {
