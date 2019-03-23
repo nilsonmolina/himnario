@@ -3,6 +3,7 @@
 // -------------- VIEW MODULE --------------
 const View = (function IIFE() {
   const hymnSearch = {
+    div: document.querySelector('.search'),
     input: document.querySelector('#searchInput'),
     suggestions: document.querySelector('#suggestions'),
 
@@ -17,9 +18,13 @@ const View = (function IIFE() {
     },
 
     clear() {
+      this.show();
       this.input.value = '';
       this.suggestions.innerHTML = '';
     },
+
+    hide() { this.div.style.opacity = '0'; },
+    show() { this.div.style.opacity = '1'; },
   };
 
   const playlist = {
@@ -73,8 +78,8 @@ const View = (function IIFE() {
       this.img.style.backgroundImage = `url(${img})`;
     },
 
-    hide() { this.div.style.display = 'none'; },
-    show() { this.div.style.display = 'block'; },
+    hide() { this.div.style.opacity = '0'; },
+    show() { this.div.style.opacity = '1'; },
   };
 
   /*------------------------
@@ -134,9 +139,10 @@ const Controller = (function IIFE(ui) {
   async function generatePlaylist() {
     const list = ui.playlist.getList();
     await downloadSlides(list);
+    ui.playlist.clear();
+    ui.hymnSearch.hide();
     ui.slides.start(state.slides[0]);
     state.playing = true;
-    ui.playlist.clear();
   }
 
   function controls(e) {
