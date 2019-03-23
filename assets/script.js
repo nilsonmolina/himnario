@@ -108,7 +108,7 @@ const Controller = (function IIFE(ui) {
     playing: false,
   };
 
-  fetch(`${state.endpoint}/_lyrics.json`)
+  fetch(`${state.endpoint}/lyrics.json`)
     .then(response => response.json())
     .then(data => state.hymns.push(...data))
     .catch(err => console.log(`Error: ${err}`));
