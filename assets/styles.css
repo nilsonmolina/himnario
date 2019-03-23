@@ -1,0 +1,137 @@
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: inherit;
+    user-select: none;
+}
+
+body {
+  background-color: #000;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.background {
+  position: absolute;
+  height: 100vh;
+  width: 100vw;
+  background: url(./homepage.jpg) no-repeat center;
+  background-size: contain;
+  z-index: -1;
+}
+
+.page-content {
+  padding-top: 150px;
+}
+
+.content {
+  max-width: 350px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.search input {
+  width: 100%;
+  height: 50px;
+  padding: 10px 25px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  border: none;
+  box-shadow: 0 5px 15px rgba(0,0,0,.4);
+  transition: box-shadow ease-in .25s;
+  position: relative;
+  z-index: 2;
+}
+.search input:focus {
+  outline: none;
+  box-shadow: 0 3px 5px rgba(0,0,0,.3);
+}
+
+.search #suggestions {
+  margin-top: 5px;
+  margin: -2px 10px;
+  list-style-type: none;
+  max-height: 295px;
+  overflow: auto;
+  box-shadow: 0 5px 15px rgba(0,0,0,.4);
+  position: relative;
+  z-index: 1;
+  /* background: black; */
+  /* background-image: linear-gradient(to bottom, black, white); */
+}
+.search #suggestions li {
+  padding: 7px 10px;
+  background: #fff;
+  border-top: 1px solid rgba(0,0,0,.25);
+  font-size: 12px;
+  color: #444;
+}
+.search #suggestions li:nth-child(1) {
+  padding-top: 10px;
+}
+.search #suggestions li:hover {
+  background-color: #eee;
+  cursor: pointer;
+}
+.search #suggestions li span {
+  width: 100%;
+  height: 100%;
+}
+
+.playlist {
+  display: none;
+  position: absolute;
+  width: 100%;
+  top: 100px;
+}
+.playlist h3 {
+  font-size: 20px;
+  text-decoration: underline;
+  margin-bottom: 10px;
+}
+.playlist .play {
+  padding: 2px 8px;
+  background: none;
+  border: 1px solid #222;
+  color: #222;
+  font-size: 15px;
+  outline: none;
+  margin-left: 20px;
+  transition: transform .25s ease-in;
+}
+.playlist .play:hover {
+  cursor: pointer;
+  transform: scale(1.05);
+}
+.playlist .list {
+  list-style-type: none;
+}
+.playlist .list li {
+  padding-bottom: 13px;
+  font-size: 13px;
+}
+.playlist .list li .remove {
+  color: white;
+  cursor: pointer;
+  font-size: 9px;
+  text-transform: uppercase;
+  padding: 2px 5px;
+  background: red;
+}
+
+.slides {
+  display: none;
+}
+.slides img {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  margin: auto;
+  overflow: auto;
+  z-index: 10;
+}
