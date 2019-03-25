@@ -10,7 +10,7 @@ const View = (function IIFE() {
     displayMatches(matches) {
       const html = matches
         .map(hymn => `
-          <li data-path="${hymn.path}" data-count="${hymn.count}">
+          <li data-path="${hymn.path}" data-index="${hymn.index}">
             ${hymn.path}
           </li>`)
         .join('');
@@ -35,7 +35,7 @@ const View = (function IIFE() {
 
     add(hymn) {
       const html = `
-        <li data-path="${hymn.path}" data-count="${hymn.count}">
+        <li data-path="${hymn.path}" data-index="${hymn.index}">
           ${hymn.path}
           <span class="remove">x</span>
         </li>`;
@@ -51,7 +51,7 @@ const View = (function IIFE() {
     getList() {
       const list = [];
       for (const hymn of this.list.children) {
-        list.push({ path: hymn.dataset.path, count: hymn.dataset.count });
+        list.push({ path: hymn.dataset.path, index: hymn.dataset.index });
       }
       return list;
     },
@@ -75,11 +75,20 @@ const View = (function IIFE() {
     },
 
     setImg(img) {
-      this.img.style.backgroundImage = `url(${img})`;
+      // Preload image to prevent flicker
+      const preload = new Image();
+      // when preload is complete, apply the image
+      preload.onload = () => { this.img.style.backgroundImage = `url(${img})`; };
+      // setting 'src' actually starts the preload
+      preload.src = img;
     },
 
     hide() { this.div.style.opacity = '0'; },
     show() { this.div.style.opacity = '1'; },
+    clear() {
+      this.img.style.backgroundImage = '';
+      this.hide();
+    },
   };
 
   /*------------------------
@@ -104,6 +113,9 @@ const Controller = (function IIFE(ui) {
     playing: false,
   };
 
+  /*------------------------
+    Init
+  ------------------------*/
   fetch(`${state.endpoint}/lyrics.json`)
     .then(response => response.json())
     .then(data => state.hymns.push(...data))
@@ -127,7 +139,7 @@ const Controller = (function IIFE(ui) {
   }
 
   function addToPlaylist(e) {
-    ui.playlist.add({ path: e.target.dataset.path, count: e.target.dataset.count });
+    ui.playlist.add({ path: e.target.dataset.path, index: e.target.dataset.index });
     ui.hymnSearch.clear();
   }
 
@@ -159,18 +171,19 @@ const Controller = (function IIFE(ui) {
     Helper Functions
   ------------------------*/
   function findMatches(wordToMatch, arr) {
-    return arr.filter((hymn) => {
+    return arr.reduce((acc, curr, index) => {
       const regex = new RegExp(wordToMatch, 'gi');
-      return hymn.path.match(regex) ? hymn : null;
-    });
+      if (curr.path.match(regex)) acc.push({ index, path: curr.path });
+      return acc;
+    }, []);
   }
 
   function downloadSlides(hymns) {
+    const baseURL = `${state.endpoint}/lyrics`;
     const urls = [];
     for (const hymn of hymns) {
-      const baseURL = `${state.endpoint}/lyrics/${hymn.path}`;
-      for (let i = 1; i < hymn.count; i++) {
-        urls.push(`${baseURL}/${Math.floor(i / 10)}${i % 10}.jpg`);
+      for (const slide of state.hymns[hymn.index].slides) {
+        urls.push(`${baseURL}/${hymn.path}/${slide}`);
       }
     }
 
@@ -183,7 +196,7 @@ const Controller = (function IIFE(ui) {
   function reset() {
     ui.hymnSearch.clear();
     ui.playlist.clear();
-    ui.slides.hide();
+    ui.slides.clear();
     state.slides = [];
     state.playing = false;
     state.current = 0;
