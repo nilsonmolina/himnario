@@ -126,8 +126,10 @@ const Controller = (function IIFE(ui) {
   ui.playlist.div.addEventListener('click', removeFromPlaylist);
   ui.playlist.play.addEventListener('click', generatePlaylist);
   document.addEventListener('keyup', controls);
-  ui.slides.div.addEventListener('touchstart', swipeStart);
-  ui.slides.div.addEventListener('touchstart', swipeEnd);
+  document.addEventListener('touchstart', swipeStart);
+  document.addEventListener('touchend', swipeEnd);
+  // document.addEventListener('mousedown', swipeStart);
+  // document.addEventListener('mouseup', swipeEnd);
 
   /*------------------------
     Event Listener Functions
@@ -172,14 +174,14 @@ const Controller = (function IIFE(ui) {
   }
 
   function swipeStart(e) {
-    state.swipeX = e.clientX;
-    console.log(state.swipeX);
+    if (!state.playing) return;
+    state.swipeX = unify(e).clientX;
   }
 
   function swipeEnd(e) {
-    if (state.swipeX === false) return;
+    if (!state.playing || state.swipeX === false) return;
 
-    const direction = state.swipeX - e.clientX;
+    const direction = state.swipeX - unify(e).clientX;
     if (Math.abs(direction) < 35) return;
 
     if (direction > 0) controls({ keyCode: 39 });
@@ -222,6 +224,8 @@ const Controller = (function IIFE(ui) {
     state.playing = false;
     state.current = 0;
   }
+
+  function unify(e) { return e.changedTouches ? e.changedTouches[0] : e; }
 
   /*------------------------
     Public Properties
