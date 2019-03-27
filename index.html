@@ -5,30 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Himnario Adventista</title>
-
-    <link rel="stylesheet" href="./assets/styles.css">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css?family=Raleway:300,400,700" rel="stylesheet">
     <link rel="shortcut icon" href="./assets/favicon.ico" type="image/x-icon">
 </head>
 <body>
-    <div class="background"></div>
-    <div class="slides">
+    <section class="slides hidden">
         <div class="img"></div>
-    </div>
+    </section>
 
-    <div class="page-content">
-        <div class="content">
-            <div class="search">
-                <input type="text" id="searchInput" placeholder="Himno - Numero/Titulo">
+    <section class="hymn-selection">
+        <div class="container">
+            <h3>Himnario <span>Adventista</span></h3>
+            <div class="search-box">
+                <input type="text" id="hymn-search" placeholder="Himno - Numero/Titulo">
+                <div class="play">
+                    <div class="triangle"></div>
+                </div>
                 <ul id="suggestions"></ul>
             </div>
-
-            <div class="playlist">
-                <h3>Playlist <button class="play">Play</button></h3>
-                <ul class="list"></ul>
-            </div>
         </div>
-    </div>
+    </section>
 
-    <script src="./assets//script.js"></script>
+    <section class="playlist">
+        <div class="container">
+            <h3>Playlist</h3>
+            <ul class="list"></ul>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
 </body>
 </html>

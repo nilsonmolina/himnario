@@ -3,8 +3,8 @@
 // -------------- VIEW MODULE --------------
 const View = (function IIFE() {
   const hymnSearch = {
-    div: document.querySelector('.search'),
-    input: document.querySelector('#searchInput'),
+    div: document.querySelector('.search-box'),
+    input: document.querySelector('#hymn-search'),
     suggestions: document.querySelector('#suggestions'),
 
     displayMatches(matches) {
@@ -36,16 +36,16 @@ const View = (function IIFE() {
     add(hymn) {
       const html = `
         <li data-path="${hymn.path}" data-index="${hymn.index}">
-          ${hymn.path}
           <span class="remove">x</span>
+          ${hymn.path}
         </li>`;
       this.list.innerHTML += html;
-      this.show();
+      // this.show();
     },
 
     delete(hymn) {
       this.list.removeChild(hymn);
-      if (!this.list.children.length) this.hide();
+      // if (!this.list.children.length) this.hide();
     },
 
     getList() {
@@ -58,7 +58,7 @@ const View = (function IIFE() {
 
     clear() {
       this.list.innerHTML = '';
-      this.hide();
+      // this.hide();
     },
 
     hide() { this.div.style.display = 'none'; },
@@ -75,16 +75,14 @@ const View = (function IIFE() {
     },
 
     setImg(img) {
-      // Preload image to prevent flicker
+      // Preload image to prevent flicker - setting 'src' starts the preload
       const preload = new Image();
-      // when preload is complete, apply the image
       preload.onload = () => { this.img.style.backgroundImage = `url(${img})`; };
-      // setting 'src' actually starts the preload
       preload.src = img;
     },
 
-    hide() { this.div.style.opacity = '0'; },
-    show() { this.div.style.opacity = '1'; },
+    hide() { this.div.classList.add('hidden'); },
+    show() { this.div.classList.remove('hidden'); },
     clear() {
       this.img.style.backgroundImage = '';
       this.hide();
@@ -145,6 +143,7 @@ const Controller = (function IIFE(ui) {
       alert('Only 15 hymns allowed. Solo 15 himnos permitido.)');
     }
     ui.hymnSearch.clear();
+    ui.hymnSearch.input.focus();
   }
 
   function removeFromPlaylist(e) {
