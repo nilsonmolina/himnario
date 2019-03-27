@@ -45,7 +45,6 @@ const View = (function IIFE() {
 
     delete(hymn) {
       this.list.removeChild(hymn);
-      // if (!this.list.children.length) this.hide();
     },
 
     getList() {
@@ -58,7 +57,6 @@ const View = (function IIFE() {
 
     clear() {
       this.list.innerHTML = '';
-      // this.hide();
     },
 
     hide() { this.div.style.display = 'none'; },
@@ -109,6 +107,7 @@ const Controller = (function IIFE(ui) {
     slides: [],
     current: 0,
     playing: false,
+    swipeX: false,
   };
 
   /*------------------------
@@ -127,6 +126,8 @@ const Controller = (function IIFE(ui) {
   ui.playlist.div.addEventListener('click', removeFromPlaylist);
   ui.playlist.play.addEventListener('click', generatePlaylist);
   document.addEventListener('keyup', controls);
+  ui.slides.addEventListener('touchstart', swipeStart);
+  ui.slides.addEventListener('touchstart', swipeEnd);
 
   /*------------------------
     Event Listener Functions
@@ -168,6 +169,23 @@ const Controller = (function IIFE(ui) {
     } else if (e.keyCode === 37 && state.current > 0) {
       ui.slides.setImg(state.slides[--state.current]);
     }
+  }
+
+  function swipeStart(e) {
+    state.swipeX = e.clientX;
+    console.log(state.swipeX);
+  }
+
+  function swipeEnd(e) {
+    if (state.swipeX === false) return;
+
+    const direction = state.swipeX - e.clientX;
+    if (Math.abs(direction) < 35) return;
+
+    if (direction > 0) controls({ keyCode: 39 });
+    else controls({ keyCode: 37 });
+
+    state.swipeX = false;
   }
 
   /*------------------------
