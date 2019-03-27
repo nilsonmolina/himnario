@@ -139,7 +139,11 @@ const Controller = (function IIFE(ui) {
   }
 
   function addToPlaylist(e) {
-    ui.playlist.add({ path: e.target.dataset.path, index: e.target.dataset.index });
+    if (ui.playlist.getList().length < 15) {
+      ui.playlist.add({ path: e.target.dataset.path, index: e.target.dataset.index });
+    } else {
+      alert('Only 15 hymns allowed. Solo 15 himnos permitido.)');
+    }
     ui.hymnSearch.clear();
   }
 

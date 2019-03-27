@@ -155,6 +155,6 @@ body {
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
-  -webkit-transition: background-image .25s ease-in-out;
-  transition: background-image .25s ease-in-out;
+  -webkit-transition: background .25s ease-in-out;
+  transition: background .25s ease-in-out;
 }
