@@ -126,8 +126,8 @@ const Controller = (function IIFE(ui) {
   ui.playlist.div.addEventListener('click', removeFromPlaylist);
   ui.playlist.play.addEventListener('click', generatePlaylist);
   document.addEventListener('keyup', controls);
-  ui.slides.addEventListener('touchstart', swipeStart);
-  ui.slides.addEventListener('touchstart', swipeEnd);
+  ui.slides.div.addEventListener('touchstart', swipeStart);
+  ui.slides.div.addEventListener('touchstart', swipeEnd);
 
   /*------------------------
     Event Listener Functions
