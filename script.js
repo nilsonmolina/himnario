@@ -87,6 +87,20 @@ const View = (function IIFE() {
     },
   };
 
+  const alert = {
+    alerts: document.querySelector('.alerts'),
+
+    error: function error(msg, timeout = 10000) {
+      const n = document.createElement('div');
+      n.setAttribute('class', 'notification');
+      n.innerHTML = `<span class="heading"></span><span class="msg"> ${msg}</span>`;
+      this.alerts.appendChild(n);
+      setTimeout(() => n.classList.add('is-danger'), 50); // delay needed to render animation
+      setTimeout(() => n.classList.remove('is-danger'), timeout);
+      setTimeout(() => n.remove(), timeout + 400);
+    },
+  };
+
   /*------------------------
     Public Properties
   ------------------------*/
@@ -94,6 +108,7 @@ const View = (function IIFE() {
     hymnSearch,
     playlist,
     slides,
+    alert,
   };
 }());
 
@@ -114,9 +129,10 @@ const Controller = (function IIFE(ui) {
     Init
   ------------------------*/
   fetch(`${state.endpoint}/lyrics.json`)
+    .then(handleErrors)
     .then(response => response.json())
     .then(data => state.hymns.push(...data))
-    .catch(err => console.log(`Error: ${err}`));
+    .catch(() => ui.alert.error('Failed to get hymns data. Please try again later.', 100000));
 
   /*------------------------
     Event Listeners
@@ -143,7 +159,7 @@ const Controller = (function IIFE(ui) {
     if (ui.playlist.getList().length < 15) {
       ui.playlist.add({ path: e.target.dataset.path, index: e.target.dataset.index });
     } else {
-      alert('Only 15 hymns allowed. Solo 15 himnos permitido.)');
+      ui.alert.error('Only 15 hymns allowed. Solo 15 himnos permitido.');
     }
     ui.hymnSearch.clear();
     ui.hymnSearch.input.focus();
@@ -155,12 +171,16 @@ const Controller = (function IIFE(ui) {
   }
 
   async function generatePlaylist() {
-    const list = ui.playlist.getList();
-    await downloadSlides(list);
-    ui.playlist.clear();
-    ui.hymnSearch.hide();
-    ui.slides.start(state.slides[0]);
-    state.playing = true;
+    try {
+      const list = ui.playlist.getList();
+      await downloadSlides(list);
+      ui.playlist.clear();
+      ui.hymnSearch.hide();
+      ui.slides.start(state.slides[0]);
+      state.playing = true;
+    } catch (err) {
+      ui.alert.error('Failed to get slides. Please try again.');
+    }
   }
 
   function controls(e) {
@@ -201,7 +221,7 @@ const Controller = (function IIFE(ui) {
     }, []);
   }
 
-  function downloadSlides(hymns) {
+  async function downloadSlides(hymns) {
     const baseURL = `${state.endpoint}/lyrics`;
     const urls = [];
     for (const hymn of hymns) {
@@ -211,9 +231,14 @@ const Controller = (function IIFE(ui) {
     }
 
     return Promise.all(urls.map(url => fetch(url)
-      .then(response => response.blob())
-      .catch(err => console.log(`Error: ${err}`))))
+      .then(handleErrors)
+      .then(response => response.blob())))
       .then(results => results.forEach(img => state.slides.push(URL.createObjectURL(img))));
+  }
+
+  function handleErrors(response) {
+    if (!response.ok) throw Error(response.statusText);
+    return response;
   }
 
   function reset() {
