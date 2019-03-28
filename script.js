@@ -171,8 +171,12 @@ const Controller = (function IIFE(ui) {
   }
 
   async function generatePlaylist() {
+    const list = ui.playlist.getList();
+    if (list.length < 1) {
+      ui.alert.error('Please select at least one hymn.', 6000);
+      return;
+    }
     try {
-      const list = ui.playlist.getList();
       await downloadSlides(list);
       ui.playlist.clear();
       ui.hymnSearch.hide();

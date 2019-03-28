@@ -149,7 +149,7 @@ body {
     margin-left: 5px;
   }
   .search-box #hymn-search {
-    width: 75%;
+    width: calc(100% - 60px);
     padding: 20px;
   }
   .search-box #suggestions {
@@ -216,9 +216,9 @@ body {
 ---------------------*/
 .alerts {
   position: fixed;
-  top: .5rem;
-  right: 1rem;
-  z-index: 50;
+  top: 15px;
+  right: 20px;
+  z-index: 100;
 }
 .alerts .notification {
   width: 300px;
@@ -233,7 +233,7 @@ body {
   transition: all .5s ease;
 }
 .alerts .notification:not(:last-child) {
-  margin-bottom: .5rem;
+  margin-bottom: 10px;
 }
 .alerts .notification .heading {
   margin-bottom: 0;
@@ -250,7 +250,7 @@ body {
 .alerts .notification.is-warning:hover,
 .alerts .notification.is-success:hover,
 .alerts .notification.is-primary:hover {
-  opacity: 1;
+  transform: scale(1.05);
 }
 
 
