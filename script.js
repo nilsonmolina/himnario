@@ -91,13 +91,21 @@ const View = (function IIFE() {
     alerts: document.querySelector('.alerts'),
 
     error: function error(msg, timeout = 10000) {
+      if (this.isDuplicate(msg)) return;
       const n = document.createElement('div');
       n.setAttribute('class', 'notification');
-      n.innerHTML = `<span class="heading"></span><span class="msg"> ${msg}</span>`;
+      n.innerHTML = `<span class="msg">${msg}</span>`;
       this.alerts.appendChild(n);
       setTimeout(() => n.classList.add('is-danger'), 50); // delay needed to render animation
       setTimeout(() => n.classList.remove('is-danger'), timeout);
       setTimeout(() => n.remove(), timeout + 400);
+    },
+
+    isDuplicate: function isDuplicate(msg) {
+      for (const { childNodes } of this.alerts.childNodes) {
+        if (childNodes[0].innerHTML === msg) return true;
+      }
+      return false;
     },
   };
 
