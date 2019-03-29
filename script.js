@@ -29,30 +29,44 @@ const View = (function IIFE() {
 
   const playlist = {
     div: document.querySelector('.playlist'),
+    cmdClear: document.querySelector('.clear'),
+    cmdLoad: document.querySelector('.load'),
+    cmdSave: document.querySelector('.save'),
     list: document.querySelector('.list'),
-    remove: document.querySelectorAll('.remove'),
     play: document.querySelector('.play'),
 
     add(hymn) {
-      const html = `
-        <li data-path="${hymn.path}" data-index="${hymn.index}">
-          <span class="remove">x</span>
-          ${hymn.path}
-        </li>`;
-      this.list.innerHTML += html;
-      // this.show();
+      const h = document.createElement('li');
+      h.innerHTML = `
+        <div class="img downloading"></div>
+        <div class="details">
+          <span class="number">Hymn ${hymn.path.split(' - ')[0]}</span>
+          <span class="name">${hymn.path.split(' - ')[1]}</span>
+        </div>
+        <div class="remove">remove</div>`;
+      this.list.appendChild(h);
+      setTimeout(() => h.classList.add('hymn'), 50);
+      return h;
     },
 
     delete(hymn) {
-      this.list.removeChild(hymn);
+      hymn.classList.remove('hymn');
+      setTimeout(() => this.list.removeChild(hymn), 400);
     },
 
     getList() {
       const list = [];
       for (const hymn of this.list.children) {
-        list.push({ path: hymn.dataset.path, index: hymn.dataset.index });
+        for (const slide of hymn.dataset.slides.split(',')) {
+          list.push(slide);
+        }
       }
+
       return list;
+    },
+
+    isDownloading() {
+      return this.list.querySelectorAll('.downloading').length > 0;
     },
 
     clear() {
@@ -142,18 +156,25 @@ const Controller = (function IIFE(ui) {
     .then(data => state.hymns.push(...data))
     .catch(() => ui.alert.error('Failed to get hymns data. Please try again later.', 100000));
 
+  // eslint-disable-next-line no-undef, no-unused-vars
+  const sortable = new Sortable(ui.playlist.list, {
+    animation: 250,
+    ghostClass: 'sortable-ghost',
+  });
+
   /*------------------------
     Event Listeners
   ------------------------*/
   ui.hymnSearch.input.addEventListener('keyup', getMatches);
   ui.hymnSearch.suggestions.addEventListener('click', addToPlaylist);
-  ui.playlist.div.addEventListener('click', removeFromPlaylist);
+  ui.playlist.cmdClear.addEventListener('click', clearPlaylist);
+  ui.playlist.cmdLoad.addEventListener('click', loadPlaylists);
+  ui.playlist.cmdSave.addEventListener('click', savePlaylist);
+  ui.playlist.list.addEventListener('click', removeFromPlaylist);
   ui.playlist.play.addEventListener('click', generatePlaylist);
   document.addEventListener('keyup', controls);
   document.addEventListener('touchstart', swipeStart);
   document.addEventListener('touchend', swipeEnd);
-  // document.addEventListener('mousedown', swipeStart);
-  // document.addEventListener('mouseup', swipeEnd);
 
   /*------------------------
     Event Listener Functions
@@ -163,14 +184,43 @@ const Controller = (function IIFE(ui) {
     ui.hymnSearch.displayMatches(matches);
   }
 
-  function addToPlaylist(e) {
-    if (ui.playlist.getList().length < 15) {
-      ui.playlist.add({ path: e.target.dataset.path, index: e.target.dataset.index });
-    } else {
-      ui.alert.error('Only 15 hymns allowed. Solo 15 himnos permitido.');
-    }
+  async function addToPlaylist(e) {
     ui.hymnSearch.clear();
-    ui.hymnSearch.input.focus();
+
+    if (ui.playlist.list.children.length > 15) {
+      ui.alert.error('Only 15 hymns allowed. Solo 15 himnos permitido.');
+      return;
+    }
+
+    try {
+      const li = ui.playlist.add({ path: e.target.dataset.path });
+      const imgDiv = li.querySelector('.img');
+      const slides = await downloadSlides(state.hymns[e.target.dataset.index]);
+
+      li.dataset.slides = slides;
+      imgDiv.style.backgroundImage = `url(${slides[0]})`;
+      imgDiv.classList.remove('downloading');
+
+      ui.hymnSearch.input.focus();
+    } catch (err) {
+      ui.alert.error('Failed to download slides!');
+    }
+  }
+
+  function clearPlaylist() {
+    ui.playlist.clear();
+  }
+
+  function loadPlaylists() {
+    if (!localStorage.getItem('playlists')) {
+      ui.alert.error('No playlists found.', 4000);
+    }
+  }
+
+  function savePlaylist() {
+    if (ui.playlist.list.childNodes.length < 1) {
+      ui.alert.error('Cannot save an empty playlist.', 4000);
+    }
   }
 
   function removeFromPlaylist(e) {
@@ -179,20 +229,23 @@ const Controller = (function IIFE(ui) {
   }
 
   async function generatePlaylist() {
-    const list = ui.playlist.getList();
-    if (list.length < 1) {
-      ui.alert.error('Please select at least one hymn.', 6000);
+    if (ui.playlist.isDownloading()) {
+      ui.alert.error('Please wait for playlist to finish downloading.', 4000);
       return;
     }
-    try {
-      await downloadSlides(list);
-      ui.playlist.clear();
-      ui.hymnSearch.hide();
-      ui.slides.start(state.slides[0]);
-      state.playing = true;
-    } catch (err) {
-      ui.alert.error('Failed to get slides. Please try again.');
+
+    const list = ui.playlist.getList();
+    if (list.length < 1) {
+      ui.alert.error('You must select a hymn.', 6000);
+      return;
     }
+
+    state.slides = list;
+    console.log(state.slides);
+    ui.playlist.clear();
+    ui.hymnSearch.hide();
+    ui.slides.start(state.slides[0]);
+    state.playing = true;
   }
 
   function controls(e) {
@@ -233,19 +286,17 @@ const Controller = (function IIFE(ui) {
     }, []);
   }
 
-  async function downloadSlides(hymns) {
+  async function downloadSlides(hymn) {
     const baseURL = `${state.endpoint}/lyrics`;
     const urls = [];
-    for (const hymn of hymns) {
-      for (const slide of state.hymns[hymn.index].slides) {
-        urls.push(`${baseURL}/${hymn.path}/${slide}`);
-      }
+    for (const slide of hymn.slides) {
+      urls.push(`${baseURL}/${hymn.path}/${slide}`);
     }
 
     return Promise.all(urls.map(url => fetch(url)
       .then(handleErrors)
       .then(response => response.blob())))
-      .then(results => results.forEach(img => state.slides.push(URL.createObjectURL(img))));
+      .then(results => results.map(img => URL.createObjectURL(img)));
   }
 
   function handleErrors(response) {

@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css?family=Raleway:300,400,700" rel="stylesheet">
     <link rel="shortcut icon" href="./assets/favicon.ico" type="image/x-icon">
+
+    <!-- https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=EBRH9U9DBFNC8&source=url -->
 </head>
 <body>
     <section class="slides hidden">
@@ -33,10 +35,16 @@
     <section class="playlist">
         <div class="container">
             <h3>Playlist</h3>
+            <div class="commands">
+                <span class="clear">Clear</span>
+                <span class="load">Load</span>
+                <span class="save">Save</span>
+            </div>
             <ul class="list"></ul>
         </div>
     </section>
 
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
