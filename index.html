@@ -44,6 +44,36 @@
         </div>
     </section>
 
+    <div id="save-playlist" class="modal">
+        <div class="card">
+            <div class="close"></div>
+            <div class="modal-body">
+                <form>
+                    <h3>Save this playlist for later</h3>
+                    <input type="text" placeholder="Playlist Name" maxlength="40" required>
+                </form>
+                <h5><span>Existing playlists</span></h5>
+                <ul class="playlists"></ul>
+            </div>
+            <div class="modal-footer">
+    
+            </div>
+        </div>
+    </div>
+
+    <div id="load-playlist" class="modal">
+        <div class="card">
+            <div class="close"></div>
+            <div class="modal-body">
+                <h3>Load a saved playlist</h3>
+                <ul class="playlists"></ul>
+            </div>
+            <div class="modal-footer">
+    
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="script.js"></script>
 </body>

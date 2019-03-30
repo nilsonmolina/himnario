@@ -16,6 +16,9 @@ body {
   min-width: 300px;
   overflow-x: hidden;
 }
+.noscroll {
+  overflow: hidden;
+}
 section { 
   min-width: 300px;
 }
@@ -194,22 +197,23 @@ section {
 }
 .playlist .commands > * {
   font-size: 10px;
-  color: #333;
-  margin-right: 15px;
+  margin-right: 5px;
   cursor: pointer;
   transition: all ease .25s;
   padding: 3px 6px;
+  border-radius: 10px;
   border: 1px solid #333;
+  color: #333;
 }
-.playlist .commands .clear:hover {
+.playlist .commands .clear.active {
   color: red;
   border: 1px solid red;
 }
-.playlist .commands .load:hover {
+.playlist .commands .load.active {
   color: blue;
   border: 1px solid blue;
 }
-.playlist .commands .save:hover {
+.playlist .commands .save.active {
   color: green;
   border: 1px solid green;
 }
@@ -264,6 +268,15 @@ section {
   left: 50%;
   transform: translate(-50%, -50%);
 }
+.playlist .list li .img.error::before {
+  content: "Download failed!";
+  text-align: center;
+  color: #fff;
+  position:absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 .playlist .list li .details {
   padding: 5px 15px 25px 15px;
 }
@@ -281,11 +294,12 @@ section {
 }
 .playlist .list li .remove {
   position: absolute;
-  bottom:5px;
-  right:10px;
+  bottom:0;
+  right:0;
   font-size: 10px;
   text-transform: uppercase;
   color: red;
+  padding: 10px 10px;
 }
 .playlist .list li .remove:hover {
   cursor: pointer;
@@ -333,7 +347,6 @@ section {
   width: 300px;
   color: #fff;
   font-size: 14px;
-  background-color: #ff3860;
   padding: 20px 30px;
   opacity: 0;
   visibility: hidden;
@@ -345,16 +358,189 @@ section {
   margin-bottom: 10px;
 }
 .alerts .notification.is-danger,
-.alerts .notification.is-warning,
-.alerts .notification.is-success,
-.alerts .notification.is-primary {
+.alerts .notification.is-success {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
 }
 .alerts .notification.is-danger:hover,
-.alerts .notification.is-warning:hover,
-.alerts .notification.is-success:hover,
-.alerts .notification.is-primary:hover {
+.alerts .notification.is-success:hover {
   transform: scale(1.03);
 }
+.alerts .notification.is-danger {
+  background-color: #FF3860;
+}
+.alerts .notification.is-success {
+  background-color: #23D160;
+}
+
+
+/* --------------------
+    MODAL
+---------------------*/
+.modal {
+  position: fixed;
+  left: -100%;
+  z-index: 4;
+  background: rgba(0,0,0,.6);
+  opacity: .5;
+  transition: opacity .5s ease;
+}
+.modal.active {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  opacity: 1;
+}
+.modal .card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -35%);
+  opacity: 0;
+  padding: 50px 60px;
+  width: 500px;
+  background: #fff;
+  border-radius: 2px;
+  box-shadow: 0 0 25px rgba(0,0,0,.25);
+  transition: transform .5s ease;
+}
+.modal.active .card {
+  opacity: 1;
+  transform: translate(-50%, -60%);
+}
+.modal .card .close {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  padding: 10px;
+  cursor: pointer;
+}
+.modal .card .close::before {
+  content: "";
+  height: 2px;
+  width: 20px;
+  background: #555;
+  position: absolute;
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+.modal .card .close::after {
+  content: "";
+  height: 2px;
+  width: 20px;
+  background: #555;
+  position: absolute;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.modal-body h3 {
+  text-align: center;
+  font-weight: 400;
+  font-size: 28px;
+  color: #000;
+}
+.modal-body h5 {
+  font-weight: 400;
+  text-align: center;
+  margin: 30px 0;
+  position: relative;
+}
+.modal-body h5::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  top: 7px;
+  width: 100%;
+  height: 1px;
+  background: #aaa;
+  /* transform: translate(-50%, -50%); */
+}
+.modal-body h5 span {
+  padding: 0 20px;
+  background: white;
+  /* z-index: 1 */
+}
+
+.modal-body input {
+  all: unset;
+  user-select: text;
+  box-sizing: border-box;
+  margin-top: 20px;
+  width: 100%;
+  min-width: 195px;
+  padding: 20px 35px;
+  font-size: 14px;
+  background: #fff;
+  border: 1px solid #bbb;
+  border-radius: 3px;
+  transition: transform .15s ease-in, box-shadow .15s ease-in, border-color .25s ease;
+}
+.modal-body input:active,
+.modal-body input:focus,
+.modal-body input:hover {
+  border: 1px solid #4B63D5;
+}
+
+.modal-body .playlists {
+  list-style-type: none;
+  max-height: 300px;
+  overflow: auto;
+}
+.modal-body .playlists > li {
+  margin-bottom: 20px;
+}
+.modal-body .playlists > li .remove {
+  display: inline-block;
+  position: relative;
+  vertical-align: middle;
+  width: 17px;
+  height: 17px;
+  border: 1px solid #FF3860;
+  border-radius: 50%;
+  margin-right: 5px;
+  cursor: pointer;
+}
+.modal-body .playlists > li .remove::before {
+  content: "";
+  display: block;
+  position: absolute;
+  height: 1px;
+  width: 10px;
+  top: 50%;
+  left: 50%;
+  background: #FF3860;
+  transform: translate(-45%, 0) rotate(45deg);
+}
+.modal-body .playlists > li .remove::after {
+  content: "";
+  display: block;
+  position: absolute;
+  height: 1px;
+  width: 10px;
+  top: 50%;
+  left: 50%;
+  background: #FF3860;
+  transform-origin: center center;
+  transform: translate(-45%, 0) rotate(-45deg);
+}
+.modal-body .playlists > li .name {
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 13px;
+}
+.modal-body .playlists > li .hymns {
+  list-style-type: none;
+  font-size: 11px;
+  line-height: 11px;
+  color: #888;  
+}
+.modal-body .playlists > li .hymns > li {
+  margin: 5px 0 5px 30px;
+}
+
+
+/* .modal-footer {
+  background
+} */
+

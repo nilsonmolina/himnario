@@ -28,7 +28,7 @@ const View = (function IIFE() {
   };
 
   const playlist = {
-    div: document.querySelector('.playlist'),
+    div: document.querySelector('section.playlist'),
     cmdClear: document.querySelector('.clear'),
     cmdLoad: document.querySelector('.load'),
     cmdSave: document.querySelector('.save'),
@@ -37,6 +37,8 @@ const View = (function IIFE() {
 
     add(hymn) {
       const h = document.createElement('li');
+      h.dataset.slides = '';
+      h.dataset.path = hymn.path;
       h.innerHTML = `
         <div class="img downloading"></div>
         <div class="details">
@@ -54,7 +56,7 @@ const View = (function IIFE() {
       setTimeout(() => this.list.removeChild(hymn), 400);
     },
 
-    getList() {
+    getListOfSlides() {
       const list = [];
       for (const hymn of this.list.children) {
         for (const slide of hymn.dataset.slides.split(',')) {
@@ -65,8 +67,20 @@ const View = (function IIFE() {
       return list;
     },
 
+    getListOfHymns() {
+      const list = [];
+      for (const hymn of this.list.children) {
+        list.push(hymn.dataset.path);
+      }
+
+      return list;
+    },
+
     isDownloading() {
       return this.list.querySelectorAll('.downloading').length > 0;
+    },
+    hasFailed() {
+      return this.list.querySelectorAll('.error').length > 0;
     },
 
     clear() {
@@ -114,12 +128,80 @@ const View = (function IIFE() {
       setTimeout(() => n.classList.remove('is-danger'), timeout);
       setTimeout(() => n.remove(), timeout + 400);
     },
+    success: function error(msg, timeout = 10000) {
+      if (this.isDuplicate(msg)) return;
+      const n = document.createElement('div');
+      n.setAttribute('class', 'notification');
+      n.innerHTML = `<span class="msg">${msg}</span>`;
+      this.alerts.appendChild(n);
+      setTimeout(() => n.classList.add('is-success'), 50); // delay needed to render animation
+      setTimeout(() => n.classList.remove('is-success'), timeout);
+      setTimeout(() => n.remove(), timeout + 400);
+    },
 
     isDuplicate: function isDuplicate(msg) {
       for (const { childNodes } of this.alerts.childNodes) {
         if (childNodes[0].innerHTML === msg) return true;
       }
       return false;
+    },
+  };
+
+  const saveModal = {
+    div: document.querySelector('#save-playlist'),
+    close: document.querySelector('#save-playlist .close'),
+    form: document.querySelector('#save-playlist form'),
+    input: document.querySelector('#save-playlist input'),
+    playlists: document.querySelector('#save-playlist ul.playlists'),
+    remove: document.querySelector('#save-playlist remove'),
+
+    prepare: function prepare(list) {
+      let html = '';
+      for (const p of list) {
+        html += `
+          <li>
+            <span class="remove"></span>
+            <span class="name">${p.name}</span>
+            <ul class="hymns">${p.paths.map(el => `<li>${el}</li>`).join('')}</ul>
+          </li>
+        `;
+      }
+      this.playlists.innerHTML = html;
+    },
+
+    show: function show(list) {
+      this.prepare(list);
+      this.div.classList.add('active');
+      this.input.focus();
+      this.div.parentNode.classList.add('noscroll');
+    },
+    hide: function hide() {
+      this.div.classList.remove('active');
+      this.div.parentNode.classList.remove('noscroll');
+    },
+  };
+
+  const loadModal = {
+    div: document.querySelector('#load-playlist'),
+    close: document.querySelector('#load-playlist .close'),
+    playlists: document.querySelector('#load-playlist ul.playlists'),
+
+    // prepare: function prepare(list) {
+    //   let html = '';
+    //   for (const p of list) {
+    //     html += `
+    //       <li>${p.path}</li>
+    //     `;
+    //   }
+    //   this.playlists.innerHTML = html;
+    // },
+
+    show: function show() {
+      // this.prepare(list);
+      this.div.classList.add('active');
+    },
+    hide: function hide() {
+      this.div.classList.remove('active');
     },
   };
 
@@ -131,6 +213,8 @@ const View = (function IIFE() {
     playlist,
     slides,
     alert,
+    saveModal,
+    loadModal,
   };
 }());
 
@@ -168,10 +252,13 @@ const Controller = (function IIFE(ui) {
   ui.hymnSearch.input.addEventListener('keyup', getMatches);
   ui.hymnSearch.suggestions.addEventListener('click', addToPlaylist);
   ui.playlist.cmdClear.addEventListener('click', clearPlaylist);
-  ui.playlist.cmdLoad.addEventListener('click', loadPlaylists);
-  ui.playlist.cmdSave.addEventListener('click', savePlaylist);
+  ui.playlist.cmdLoad.addEventListener('click', showLoadModal);
+  ui.playlist.cmdSave.addEventListener('click', showSaveModal);
   ui.playlist.list.addEventListener('click', removeFromPlaylist);
-  ui.playlist.play.addEventListener('click', generatePlaylist);
+  ui.playlist.play.addEventListener('click', startSlideshow);
+  ui.loadModal.div.addEventListener('click', handleLoadModalClick);
+  ui.saveModal.div.addEventListener('click', handleSaveModalClick);
+  ui.saveModal.form.addEventListener('submit', savePlaylist);
   document.addEventListener('keyup', controls);
   document.addEventListener('touchstart', swipeStart);
   document.addEventListener('touchend', swipeEnd);
@@ -192,35 +279,22 @@ const Controller = (function IIFE(ui) {
       return;
     }
 
+    const li = ui.playlist.add({ path: e.target.dataset.path });
+    const imgDiv = li.querySelector('.img');
     try {
-      const li = ui.playlist.add({ path: e.target.dataset.path });
-      const imgDiv = li.querySelector('.img');
       const slides = await downloadSlides(state.hymns[e.target.dataset.index]);
-
       li.dataset.slides = slides;
       imgDiv.style.backgroundImage = `url(${slides[0]})`;
-      imgDiv.classList.remove('downloading');
-
-      ui.hymnSearch.input.focus();
     } catch (err) {
       ui.alert.error('Failed to download slides!');
+      imgDiv.classList.add('error');
     }
+    imgDiv.classList.remove('downloading');
+    ui.hymnSearch.input.focus();
   }
 
   function clearPlaylist() {
     ui.playlist.clear();
-  }
-
-  function loadPlaylists() {
-    if (!localStorage.getItem('playlists')) {
-      ui.alert.error('No playlists found.', 4000);
-    }
-  }
-
-  function savePlaylist() {
-    if (ui.playlist.list.childNodes.length < 1) {
-      ui.alert.error('Cannot save an empty playlist.', 4000);
-    }
   }
 
   function removeFromPlaylist(e) {
@@ -228,34 +302,98 @@ const Controller = (function IIFE(ui) {
     ui.playlist.delete(e.target.parentNode);
   }
 
-  async function generatePlaylist() {
+  function startSlideshow() {
     if (ui.playlist.isDownloading()) {
       ui.alert.error('Please wait for playlist to finish downloading.', 4000);
       return;
     }
+    if (ui.playlist.hasFailed()) {
+      ui.alert.error('Please remove failed hymns.', 4000);
+      return;
+    }
 
-    const list = ui.playlist.getList();
+    const list = ui.playlist.getListOfSlides();
     if (list.length < 1) {
       ui.alert.error('You must select a hymn.', 6000);
       return;
     }
 
     state.slides = list;
-    console.log(state.slides);
-    ui.playlist.clear();
+    ui.playlist.hide();
     ui.hymnSearch.hide();
     ui.slides.start(state.slides[0]);
     state.playing = true;
   }
 
+  function endSlideshow() {
+    ui.hymnSearch.clear();
+    ui.slides.clear();
+    state.slides = [];
+    state.playing = false;
+    state.current = 0;
+    ui.playlist.show();
+  }
+
   function controls(e) {
     if (!state.playing) return;
     if (e.keyCode === 32 || e.keyCode === 39) {
-      if (state.current >= state.slides.length - 1) reset();
+      if (state.current >= state.slides.length - 1) endSlideshow();
       else ui.slides.setImg(state.slides[++state.current]);
     } else if (e.keyCode === 37 && state.current > 0) {
       ui.slides.setImg(state.slides[--state.current]);
     }
+  }
+
+  function showLoadModal() {
+    const playlists = getAllLocalStorage();
+    if (playlists.length < 1) {
+      ui.alert.error('No playlists found.', 4000);
+      return;
+    }
+    ui.loadModal.show();
+  }
+
+  function showSaveModal() {
+    if (ui.playlist.list.childNodes.length < 1) {
+      ui.alert.error('Cannot save an empty playlist.', 4000);
+      return;
+    }
+    const playlists = getAllLocalStorage();
+    ui.saveModal.show(playlists);
+  }
+
+  function handleLoadModalClick(e) {
+    if (e.target === ui.loadModal.div || e.target === ui.loadModal.close) {
+      ui.loadModal.hide();
+    }
+  }
+
+  function handleSaveModalClick(e) {
+    if (e.target === ui.saveModal.div || e.target === ui.saveModal.close) {
+      ui.saveModal.hide();
+    }
+    if (e.target.classList.contains('remove')) {
+      removeSavedPlaylist(e);
+    }
+  }
+
+  function removeSavedPlaylist(e) {
+    console.log(e.target.nextElementSibling.innerHTML);
+    console.log(e.target.nextElementSibling);
+    localStorage.removeItem(e.target.nextElementSibling.innerHTML);
+    e.target.parentNode.parentNode.removeChild(e.target.parentNode);
+  }
+
+  function savePlaylist(e) {
+    e.preventDefault();
+    const name = ui.saveModal.input.value;
+    if (localStorage.getItem(name)) {
+      ui.alert.error('A playlist with that name already exists. Please try another name.', 4000);
+      return;
+    }
+    localStorage.setItem(name, ui.playlist.getListOfHymns().join('|||'));
+    ui.alert.success('Playlist saved successfully');
+    ui.saveModal.hide();
   }
 
   function swipeStart(e) {
@@ -304,14 +442,19 @@ const Controller = (function IIFE(ui) {
     return response;
   }
 
-  function reset() {
-    ui.hymnSearch.clear();
-    ui.playlist.clear();
-    ui.slides.clear();
-    state.slides = [];
-    state.playing = false;
-    state.current = 0;
+  function getAllLocalStorage() {
+    return Object.keys(localStorage)
+      .map(key => ({ name: key, paths: localStorage.getItem(key).split('|||') }));
   }
+
+  // function reset() {
+  //   ui.hymnSearch.clear();
+  //   ui.playlist.clear();
+  //   ui.slides.clear();
+  //   state.slides = [];
+  //   state.playing = false;
+  //   state.current = 0;
+  // }
 
   function unify(e) { return e.changedTouches ? e.changedTouches[0] : e; }
 
