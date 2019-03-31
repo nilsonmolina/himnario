@@ -317,10 +317,10 @@ section {
   z-index: 10;
   background: #000;
   opacity: 1;
-  transition: opacity .5s ease-in, z-index .5s ease-in;
+  transition: opacity .25s ease-in, z-index .5s ease-in;
 }
 .slides.hidden {
-  z-index: -1;
+  z-index: 1;
   opacity: 0;
 }
 .slides .img {
