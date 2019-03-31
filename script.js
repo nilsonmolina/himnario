@@ -186,18 +186,22 @@ const View = (function IIFE() {
     close: document.querySelector('#load-playlist .close'),
     playlists: document.querySelector('#load-playlist ul.playlists'),
 
-    // prepare: function prepare(list) {
-    //   let html = '';
-    //   for (const p of list) {
-    //     html += `
-    //       <li>${p.path}</li>
-    //     `;
-    //   }
-    //   this.playlists.innerHTML = html;
-    // },
+    prepare: function prepare(list) {
+      let html = '';
+      for (const p of list) {
+        html += `
+          <li>
+            <span class="remove"></span>
+            <span class="name">${p.name}</span>
+            <ul class="hymns">${p.paths.map(el => `<li>${el}</li>`).join('')}</ul>
+          </li>
+        `;
+      }
+      this.playlists.innerHTML = html;
+    },
 
-    show: function show() {
-      // this.prepare(list);
+    show: function show(list) {
+      this.prepare(list);
       this.div.classList.add('active');
     },
     hide: function hide() {
@@ -350,7 +354,7 @@ const Controller = (function IIFE(ui) {
       ui.alert.error('No playlists found.', 4000);
       return;
     }
-    ui.loadModal.show();
+    ui.loadModal.show(playlists);
   }
 
   function showSaveModal() {
@@ -365,6 +369,13 @@ const Controller = (function IIFE(ui) {
   function handleLoadModalClick(e) {
     if (e.target === ui.loadModal.div || e.target === ui.loadModal.close) {
       ui.loadModal.hide();
+    }
+    if (e.target.classList.contains('remove')) {
+      removeSavedPlaylist(e);
+    }
+    console.log(e);
+    if (e.target.classList.contains('remove')) {
+      removeSavedPlaylist(e);
     }
   }
 

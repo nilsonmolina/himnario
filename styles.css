@@ -204,6 +204,7 @@ section {
   border-radius: 10px;
   border: 1px solid #333;
   color: #333;
+  display: none;
 }
 .playlist .commands .clear.active {
   color: red;
@@ -395,9 +396,9 @@ section {
 }
 .modal .card {
   position: absolute;
-  top: 50%;
+  top: 12vh;
   left: 50%;
-  transform: translate(-50%, -35%);
+  transform: translate(-50%, 15%);
   opacity: 0;
   padding: 50px 60px;
   width: 500px;
@@ -408,7 +409,7 @@ section {
 }
 .modal.active .card {
   opacity: 1;
-  transform: translate(-50%, -60%);
+  transform: translate(-50%, 0);
 }
 .modal .card .close {
   position: absolute;
@@ -442,7 +443,7 @@ section {
 .modal-body h5 {
   font-weight: 400;
   text-align: center;
-  margin: 30px 0;
+  margin: 30px 0 20px 0;
   position: relative;
 }
 .modal-body h5::before {
@@ -454,12 +455,10 @@ section {
   width: 100%;
   height: 1px;
   background: #aaa;
-  /* transform: translate(-50%, -50%); */
 }
 .modal-body h5 span {
   padding: 0 20px;
   background: white;
-  /* z-index: 1 */
 }
 
 .modal-body input {
@@ -486,44 +485,16 @@ section {
   list-style-type: none;
   max-height: 300px;
   overflow: auto;
+  margin-top: 10px;
 }
 .modal-body .playlists > li {
-  margin-bottom: 20px;
-}
-.modal-body .playlists > li .remove {
-  display: inline-block;
-  position: relative;
-  vertical-align: middle;
-  width: 17px;
-  height: 17px;
-  border: 1px solid #FF3860;
-  border-radius: 50%;
-  margin-right: 5px;
   cursor: pointer;
+  padding: 15px 20px;
 }
-.modal-body .playlists > li .remove::before {
-  content: "";
-  display: block;
-  position: absolute;
-  height: 1px;
-  width: 10px;
-  top: 50%;
-  left: 50%;
-  background: #FF3860;
-  transform: translate(-45%, 0) rotate(45deg);
+.modal-body .playlists > li:hover {
+  background: #f3f3f3;
 }
-.modal-body .playlists > li .remove::after {
-  content: "";
-  display: block;
-  position: absolute;
-  height: 1px;
-  width: 10px;
-  top: 50%;
-  left: 50%;
-  background: #FF3860;
-  transform-origin: center center;
-  transform: translate(-45%, 0) rotate(-45deg);
-}
+
 .modal-body .playlists > li .name {
   display: inline-block;
   vertical-align: middle;
@@ -533,14 +504,8 @@ section {
   list-style-type: none;
   font-size: 11px;
   line-height: 11px;
-  color: #888;  
+  color: #888;
 }
 .modal-body .playlists > li .hymns > li {
   margin: 5px 0 5px 30px;
 }
-
-
-/* .modal-footer {
-  background
-} */
-
