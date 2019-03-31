@@ -345,6 +345,8 @@ const Controller = (function IIFE(ui) {
       else ui.slides.setImg(state.slides[++state.current]);
     } else if (e.keyCode === 37 && state.current > 0) {
       ui.slides.setImg(state.slides[--state.current]);
+    } else if (e.keyCode === 27) {
+      endSlideshow();
     }
   }
 
