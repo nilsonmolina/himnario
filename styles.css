@@ -540,3 +540,18 @@ section {
 .modal-body .playlists > li .hymns > li {
   margin: 5px 0 5px 35px;
 }
+
+@media only screen and (max-width: 510px) {
+  .modal .card {
+    top: 0;
+    left: 0;
+    right: 0;
+    width: auto;
+    max-height: calc(100vh - 20px);
+    margin: 10px;
+    transform: translate(0, 15%);
+  }
+  .modal.active .card {
+    transform: translate(0, 0);
+  }
+}
