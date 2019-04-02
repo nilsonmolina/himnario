@@ -192,7 +192,6 @@ section {
   font-size: 20px;
 }
 .playlist .commands {
-  /* display: inline-block; */
   margin-top: 5px;
 }
 .playlist .commands > * {
@@ -204,7 +203,6 @@ section {
   border-radius: 10px;
   border: 1px solid #333;
   color: #333;
-  display: none;
 }
 .playlist .commands .clear.active {
   color: red;
@@ -488,24 +486,57 @@ section {
   margin-top: 10px;
 }
 .modal-body .playlists > li {
-  cursor: pointer;
   padding: 15px 20px;
+  vertical-align: middle;
+  position: relative;
 }
 .modal-body .playlists > li:hover {
   background: #f3f3f3;
 }
 
-.modal-body .playlists > li .name {
+.modal-body .playlists > li > div {
   display: inline-block;
   vertical-align: middle;
-  line-height: 13px;
+  height: 100%;
+  cursor: pointer;
+  color: #444;
 }
+
+.modal-body .playlists > li .name {
+  cursor: pointer;
+}
+.modal-body .playlists > li .remove {
+  height: auto;
+  font-size: 12px;
+  color: red;
+  position: absolute;
+  right: 20px;
+  padding: 4px;
+}
+#load-playlist .modal-body .playlists > li .name:hover {
+  text-decoration: underline;
+}
+#load-playlist .modal-body .playlists > li .remove:hover {
+  font-weight: 600;
+}
+#save-playlist .modal-body .playlists > li .remove {
+  display: none;
+}
+.modal-body .playlists > li .toggle {
+  padding: 0 5px;
+  margin-right: 5px;
+}
+
 .modal-body .playlists > li .hymns {
   list-style-type: none;
   font-size: 11px;
   line-height: 11px;
   color: #888;
+  display: none;
+}
+.modal-body .playlists > li .hymns.visible {
+  display: block;
 }
 .modal-body .playlists > li .hymns > li {
-  margin: 5px 0 5px 30px;
+  margin: 5px 0 5px 35px;
 }

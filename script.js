@@ -153,6 +153,7 @@ const View = (function IIFE() {
     form: document.querySelector('#save-playlist form'),
     input: document.querySelector('#save-playlist input'),
     playlists: document.querySelector('#save-playlist ul.playlists'),
+    listOfHymns: document.querySelector('#load-playlist ul.playlists ul.hymns'),
     remove: document.querySelector('#save-playlist remove'),
 
     prepare: function prepare(list) {
@@ -160,15 +161,22 @@ const View = (function IIFE() {
       for (const p of list) {
         html += `
           <li>
-            <span class="remove"></span>
-            <span class="name">${p.name}</span>
+            <div class="toggle">+</div>
+            <div class="name">${p.name}</div>
+            <div class="remove">remove</div>
             <ul class="hymns">${p.paths.map(el => `<li>${el}</li>`).join('')}</ul>
           </li>
         `;
       }
       this.playlists.innerHTML = html;
     },
-
+    toggleList: function toggle() {
+      if (this.listOfHymns.classList.contains('visible')) {
+        this.listOfHymns.classList.remove('visible');
+      } else {
+        this.listOfHymns.classList.add('visible');
+      }
+    },
     show: function show(list) {
       this.prepare(list);
       this.div.classList.add('active');
@@ -179,20 +187,26 @@ const View = (function IIFE() {
       this.div.classList.remove('active');
       this.div.parentNode.classList.remove('noscroll');
     },
+    clear: function clear() {
+      this.input.form.reset();
+      this.hide();
+    },
   };
 
   const loadModal = {
     div: document.querySelector('#load-playlist'),
     close: document.querySelector('#load-playlist .close'),
     playlists: document.querySelector('#load-playlist ul.playlists'),
+    listOfHymns: document.querySelector('#load-playlist ul.playlists ul.hymns'),
 
     prepare: function prepare(list) {
       let html = '';
       for (const p of list) {
         html += `
           <li>
-            <span class="remove"></span>
-            <span class="name">${p.name}</span>
+            <div class="remove">remove</div>
+            <div class="toggle">+</div>
+            <div class="name">${p.name}</div>
             <ul class="hymns">${p.paths.map(el => `<li>${el}</li>`).join('')}</ul>
           </li>
         `;
@@ -200,12 +214,25 @@ const View = (function IIFE() {
       this.playlists.innerHTML = html;
     },
 
+    toggleList: function toggle() {
+      if (this.listOfHymns.classList.contains('visible')) {
+        this.listOfHymns.classList.remove('visible');
+      } else {
+        this.listOfHymns.classList.add('visible');
+      }
+    },
     show: function show(list) {
       this.prepare(list);
       this.div.classList.add('active');
+      this.div.parentNode.classList.add('noscroll');
     },
     hide: function hide() {
       this.div.classList.remove('active');
+      this.div.parentNode.classList.remove('noscroll');
+    },
+    clear: function clear() {
+      this.input.form.reset();
+      this.hide();
     },
   };
 
@@ -278,7 +305,7 @@ const Controller = (function IIFE(ui) {
   async function addToPlaylist(e) {
     ui.hymnSearch.clear();
 
-    if (ui.playlist.list.children.length > 15) {
+    if (ui.playlist.list.children.length >= 15) {
       ui.alert.error('Only 15 hymns allowed. Solo 15 himnos permitido.');
       return;
     }
@@ -323,8 +350,6 @@ const Controller = (function IIFE(ui) {
     }
 
     state.slides = list;
-    ui.playlist.hide();
-    ui.hymnSearch.hide();
     ui.slides.start(state.slides[0]);
     state.playing = true;
   }
@@ -335,7 +360,6 @@ const Controller = (function IIFE(ui) {
     state.slides = [];
     state.playing = false;
     state.current = 0;
-    ui.playlist.show();
   }
 
   function controls(e) {
@@ -368,32 +392,48 @@ const Controller = (function IIFE(ui) {
     ui.saveModal.show(playlists);
   }
 
+  // CODE SMELL! - CONTROLLER SHOULD NOT BE EDITING VIEW DIRECTLY
+  // CODE SMELL! - DRY PRINCIPLE NOT ADHERED (LOAD AND SAVE MODALS TOO SIMILAR)
   function handleLoadModalClick(e) {
     if (e.target === ui.loadModal.div || e.target === ui.loadModal.close) {
+      ui.loadModal.hide();
+    }
+    if (e.target.classList.contains('toggle')) {
+      const hymns = e.target.parentNode.querySelector('ul.hymns');
+      if (hymns.classList.contains('visible')) {
+        hymns.classList.remove('visible');
+      } else {
+        hymns.classList.add('visible');
+      }
+    }
+    if (e.target.classList.contains('name')) {
+      loadPlaylist(e);
       ui.loadModal.hide();
     }
     if (e.target.classList.contains('remove')) {
       removeSavedPlaylist(e);
     }
-    console.log(e);
-    if (e.target.classList.contains('remove')) {
-      removeSavedPlaylist(e);
-    }
   }
 
+  // CODE SMELL! - CONTROLLER SHOULD NOT BE EDITING VIEW DIRECTLY
+  // CODE SMELL! - DRY PRINCIPLE NOT ADHERED (LOAD AND SAVE MODALS TOO SIMILAR)
   function handleSaveModalClick(e) {
     if (e.target === ui.saveModal.div || e.target === ui.saveModal.close) {
       ui.saveModal.hide();
     }
-    if (e.target.classList.contains('remove')) {
-      removeSavedPlaylist(e);
+    if (e.target.classList.contains('toggle')) {
+      const hymns = e.target.parentNode.querySelector('ul.hymns');
+      if (hymns.classList.contains('visible')) {
+        hymns.classList.remove('visible');
+      } else {
+        hymns.classList.add('visible');
+      }
     }
   }
 
+  // CODE SMELL! - CONTROLLER SHOULD NOT BE EDITING VIEW DIRECTLY
   function removeSavedPlaylist(e) {
-    console.log(e.target.nextElementSibling.innerHTML);
-    console.log(e.target.nextElementSibling);
-    localStorage.removeItem(e.target.nextElementSibling.innerHTML);
+    localStorage.removeItem(e.target.parentNode.querySelector('.name').innerHTML);
     e.target.parentNode.parentNode.removeChild(e.target.parentNode);
   }
 
@@ -406,7 +446,23 @@ const Controller = (function IIFE(ui) {
     }
     localStorage.setItem(name, ui.playlist.getListOfHymns().join('|||'));
     ui.alert.success('Playlist saved successfully');
-    ui.saveModal.hide();
+    ui.saveModal.clear();
+  }
+
+  function loadPlaylist(e) {
+    ui.playlist.clear();
+    const saved = localStorage.getItem(e.target.innerHTML);
+    if (!saved) {
+      ui.alert.error('Could not load playlist. Please try again later.');
+      return;
+    }
+
+    saved.split('|||').forEach((el) => {
+      const temp = document.createElement('li');
+      temp.dataset.path = el;
+      temp.dataset.index = state.hymns.findIndex(h => h.path === el);
+      addToPlaylist({ target: temp });
+    });
   }
 
   function swipeStart(e) {
@@ -459,15 +515,6 @@ const Controller = (function IIFE(ui) {
     return Object.keys(localStorage)
       .map(key => ({ name: key, paths: localStorage.getItem(key).split('|||') }));
   }
-
-  // function reset() {
-  //   ui.hymnSearch.clear();
-  //   ui.playlist.clear();
-  //   ui.slides.clear();
-  //   state.slides = [];
-  //   state.playing = false;
-  //   state.current = 0;
-  // }
 
   function unify(e) { return e.changedTouches ? e.changedTouches[0] : e; }
 
