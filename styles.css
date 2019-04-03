@@ -519,6 +519,9 @@ section {
 #load-playlist .modal-body .playlists > li .remove:hover {
   font-weight: 600;
 }
+#save-playlist .modal-body .playlists > li .name {
+  cursor: default;
+}
 #save-playlist .modal-body .playlists > li .remove {
   display: none;
 }
