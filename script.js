@@ -365,9 +365,9 @@ const Controller = (function IIFE(ui) {
 
   function controls(e) {
     if (!state.playing) return;
-    if (e.keyCode === 32 || e.keyCode === 39) {
-      if (state.current >= state.slides.length - 1) endSlideshow();
-      else ui.slides.setImg(state.slides[++state.current]);
+    if (state.current < state.slides.length - 1 && (e.keyCode === 32 || e.keyCode === 39)) {
+      // if (state.current >= state.slides.length - 1) endSlideshow();
+      ui.slides.setImg(state.slides[++state.current]);
     } else if (e.keyCode === 37 && state.current > 0) {
       ui.slides.setImg(state.slides[--state.current]);
     } else if (e.keyCode === 27) {
