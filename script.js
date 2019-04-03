@@ -357,6 +357,7 @@ const Controller = (function IIFE(ui) {
   function endSlideshow() {
     ui.hymnSearch.clear();
     ui.slides.clear();
+    ui.playlist.clear();
     state.slides = [];
     state.playing = false;
     state.current = 0;
