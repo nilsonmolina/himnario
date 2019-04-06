@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Himnario Adventista</title>
+    <meta name="Description" content="This webapp allows the creation of a hymn slideshow.">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css?family=Raleway:300,400,700" rel="stylesheet">
+    <link rel="shortcut icon" href="./assets/favicon.ico" type="image/x-icon">
+
+    <!-- https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=EBRH9U9DBFNC8&source=url -->
+</head>
+<body>
+    <section class="alerts"></section>
+
+    <section class="hymn-selection">
+        <div class="container">
+            <h3>Himnario <span>Adventista</span></h3>
+            <div class="search-box">
+                <input type="text" aria-label="search" id="hymn-search" placeholder="Himno - Numero/Titulo">
+                <div class="play">
+                    <div class="triangle"></div>
+                </div>
+                <ul id="suggestions"></ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="playlist">
+        <div class="container">
+            <h3>Playlist</h3>
+            <div class="commands">
+                <span class="clear">Clear</span>
+                <span class="load">Load</span>
+                <span class="save">Save</span>
+            </div>
+            <ul class="list"></ul>
+        </div>
+    </section>
+
+    <div id="save-playlist" class="modal">
+        <div class="card">
+            <div class="close"></div>
+            <div class="modal-body">
+                <form>
+                    <h3>Save this playlist for later</h3>
+                    <input type="text" placeholder="Playlist Name" maxlength="40" required>
+                </form>
+                <h5><span>Existing playlists</span></h5>
+                <ul class="playlists"></ul>
+            </div>
+            <div class="modal-footer">
+    
+            </div>
+        </div>
+    </div>
+
+    <div id="load-playlist" class="modal">
+        <div class="card">
+            <div class="close"></div>
+            <div class="modal-body">
+                <h3>Load a saved playlist</h3>
+                <ul class="playlists"></ul>
+            </div>
+            <div class="modal-footer">
+    
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
