@@ -10,5 +10,5 @@ This entire site was created using vanilla HTML/CSS/JS, without the need for any
 
 
 ## Presenter Mode
-**Site:** [http://www.himnario.ml/presenter](http://www.himnario.ml/presenter)  
+**Site:** [http://www.himnario.ml/presenter/](http://www.himnario.ml/presenter/)  
 A requested feature was to have the slides play on a new window. I was able to implement this fairly easily by utilizing the `window.open` function. I then refactored all my slide html elements to a new html page and by storing the new window in a variable, I could just apply the existing code on that new window.

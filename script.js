@@ -350,6 +350,7 @@ const Controller = (function IIFE(ui) {
     }
 
     state.slides = list;
+    ui.playlist.hide();
     ui.slides.start(state.slides[0]);
     state.playing = true;
   }
