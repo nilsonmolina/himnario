@@ -432,6 +432,9 @@ const Controller = (function IIFE(ui) {
         hymns.classList.add('visible');
       }
     }
+    if (e.target.classList.contains('remove')) {
+      removeSavedPlaylist(e);
+    }
   }
 
   // CODE SMELL! - CONTROLLER SHOULD NOT BE EDITING VIEW DIRECTLY

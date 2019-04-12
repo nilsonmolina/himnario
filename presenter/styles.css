@@ -518,9 +518,9 @@ section {
 #save-playlist .modal-body .playlists > li .name {
   cursor: default;
 }
-#save-playlist .modal-body .playlists > li .remove {
+/* #save-playlist .modal-body .playlists > li .remove {
   display: none;
-}
+} */
 .modal-body .playlists > li .toggle {
   padding: 0 5px;
   margin-right: 5px;
