@@ -84,6 +84,7 @@ const View = (function IIFE() {
     },
 
     clear() {
+      this.show();
       this.list.innerHTML = '';
     },
 
