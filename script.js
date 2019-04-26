@@ -6,6 +6,7 @@ const View = (function IIFE() {
     div: document.querySelector('.search-box'),
     input: document.querySelector('#hymn-search'),
     suggestions: document.querySelector('#suggestions'),
+    monitorToggle: document.querySelector('#dual-monitor-toggle'),
 
     displayMatches(matches) {
       const html = matches
@@ -21,6 +22,10 @@ const View = (function IIFE() {
       this.show();
       this.input.value = '';
       this.suggestions.innerHTML = '';
+    },
+
+    setMonitorToggle(val) {
+      this.monitorToggle.checked = !!val;
     },
 
     hide() { this.div.style.opacity = '0'; },
@@ -112,6 +117,39 @@ const View = (function IIFE() {
     show() { this.div.classList.remove('hidden'); },
     clear() {
       this.img.style.backgroundImage = '';
+      this.hide();
+    },
+  };
+
+  const slidesDualMonitor = {
+    win: null,
+
+    start(img) {
+      if (this.win) {
+        this.setImg(img);
+        this.show();
+      } else {
+        this.win = window.open('./slides.html', 'himnario slides', 'menubar=no');
+        this.win.addEventListener('DOMContentLoaded', () => {
+          this.setImg(img);
+          this.show();
+          this.win.addEventListener('unload', () => { this.win = null; });
+        });
+      }
+    },
+
+    setImg(img) {
+      // Preload image to prevent flicker - setting 'src' starts the preload
+      const preload = new Image();
+      preload.onload = () => {
+        this.win.document.querySelector('.slides .img').style.backgroundImage = `url(${img})`;
+      };
+      preload.src = img;
+    },
+
+    hide() { this.win.document.querySelector('.slides .img').classList.add('hidden'); },
+    show() { this.win.document.querySelector('.slides .img').classList.remove('hidden'); },
+    clear() {
       this.hide();
     },
   };
@@ -247,6 +285,7 @@ const View = (function IIFE() {
     alert,
     saveModal,
     loadModal,
+    slidesDualMonitor,
   };
 }());
 
@@ -261,6 +300,7 @@ const Controller = (function IIFE(ui) {
     current: 0,
     playing: false,
     swipeX: false,
+    dualMonitorMode: localStorage.getItem('dualMonitorMode') === 'true',
   };
 
   /*------------------------
@@ -271,6 +311,9 @@ const Controller = (function IIFE(ui) {
     .then(response => response.json())
     .then(data => state.hymns.push(...data))
     .catch(() => ui.alert.error('Failed to get hymns data. Please try again later.', 100000));
+
+  // SET TOGGLE TO VALUE STRORED IN LOCALSTORAGE
+  ui.hymnSearch.setMonitorToggle(state.dualMonitorMode);
 
   // eslint-disable-next-line no-undef, no-unused-vars
   const sortable = new Sortable(ui.playlist.list, {
@@ -283,6 +326,7 @@ const Controller = (function IIFE(ui) {
   ------------------------*/
   ui.hymnSearch.input.addEventListener('keyup', getMatches);
   ui.hymnSearch.suggestions.addEventListener('click', addToPlaylist);
+  ui.hymnSearch.monitorToggle.addEventListener('click', dualMonitorToggled);
   ui.playlist.cmdClear.addEventListener('click', clearPlaylist);
   ui.playlist.cmdLoad.addEventListener('click', showLoadModal);
   ui.playlist.cmdSave.addEventListener('click', showSaveModal);
@@ -325,6 +369,11 @@ const Controller = (function IIFE(ui) {
     ui.hymnSearch.input.focus();
   }
 
+  function dualMonitorToggled(e) {
+    state.dualMonitorMode = e.target.checked;
+    localStorage.setItem('dualMonitorMode', e.target.checked);
+  }
+
   function clearPlaylist() {
     ui.playlist.clear();
   }
@@ -351,14 +400,19 @@ const Controller = (function IIFE(ui) {
     }
 
     state.slides = list;
-    ui.playlist.hide();
-    ui.slides.start(state.slides[0]);
     state.playing = true;
+
+    if (state.dualMonitorMode) ui.slidesDualMonitor.start(state.slides[0]);
+    else {
+      ui.playlist.hide();
+      ui.slides.start(state.slides[0]);
+    }
   }
 
   function endSlideshow() {
     ui.hymnSearch.clear();
-    ui.slides.clear();
+    if (state.dualMonitorMode) ui.slidesDualMonitor.clear();
+    else ui.slides.clear();
     ui.playlist.clear();
     state.slides = [];
     state.playing = false;
@@ -378,7 +432,7 @@ const Controller = (function IIFE(ui) {
   }
 
   function showLoadModal() {
-    const playlists = getAllLocalStorage();
+    const playlists = getLocalStoragePlaylists();
     if (playlists.length < 1) {
       ui.alert.error('No playlists found.', 4000);
       return;
@@ -391,7 +445,7 @@ const Controller = (function IIFE(ui) {
       ui.alert.error('Cannot save an empty playlist.', 4000);
       return;
     }
-    const playlists = getAllLocalStorage();
+    const playlists = getLocalStoragePlaylists();
     ui.saveModal.show(playlists);
   }
 
@@ -439,31 +493,51 @@ const Controller = (function IIFE(ui) {
 
   // CODE SMELL! - CONTROLLER SHOULD NOT BE EDITING VIEW DIRECTLY
   function removeSavedPlaylist(e) {
-    localStorage.removeItem(e.target.parentNode.querySelector('.name').innerHTML);
+    const name = e.target.parentNode.querySelector('.name').innerHTML;
+    const playlists = getLocalStoragePlaylists();
+    if (!playlists) {
+      ui.alert.error('Could not delete playlist. Please try again later.');
+      return;
+    }
+
+    for (let i = 0; i < playlists.length; i++) {
+      if (name === playlists[i].name) {
+        playlists.splice(i, 1);
+        break;
+      }
+    }
+    localStorage.setItem('playlists', JSON.stringify(playlists));
+
     e.target.parentNode.parentNode.removeChild(e.target.parentNode);
   }
 
   function savePlaylist(e) {
     e.preventDefault();
     const name = ui.saveModal.input.value;
-    if (localStorage.getItem(name)) {
+    const playlists = getLocalStoragePlaylists();
+
+    if (playlists.find(el => el.name === name)) {
       ui.alert.error('A playlist with that name already exists. Please try another name.', 4000);
       return;
     }
-    localStorage.setItem(name, ui.playlist.getListOfHymns().join('|||'));
+
+    playlists.push({ name, paths: ui.playlist.getListOfHymns() });
+    localStorage.setItem('playlists', JSON.stringify(playlists));
+
     ui.alert.success('Playlist saved successfully');
     ui.saveModal.clear();
   }
 
   function loadPlaylist(e) {
     ui.playlist.clear();
-    const saved = localStorage.getItem(e.target.innerHTML);
+    const playlists = getLocalStoragePlaylists();
+    const saved = playlists.find(el => el.name === e.target.innerHTML).paths;
     if (!saved) {
       ui.alert.error('Could not load playlist. Please try again later.');
       return;
     }
 
-    saved.split('|||').forEach((el) => {
+    saved.forEach((el) => {
       const temp = document.createElement('li');
       temp.dataset.path = el;
       temp.dataset.index = state.hymns.findIndex(h => h.path === el);
@@ -517,9 +591,8 @@ const Controller = (function IIFE(ui) {
     return response;
   }
 
-  function getAllLocalStorage() {
-    return Object.keys(localStorage)
-      .map(key => ({ name: key, paths: localStorage.getItem(key).split('|||') }));
+  function getLocalStoragePlaylists() {
+    return JSON.parse(localStorage.getItem('playlists')) || [];
   }
 
   function unify(e) { return e.changedTouches ? e.changedTouches[0] : e; }
