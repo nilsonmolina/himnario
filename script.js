@@ -147,8 +147,16 @@ const View = (function IIFE() {
       preload.src = img;
     },
 
-    hide() { this.win.document.querySelector('.slides .img').classList.add('hidden'); },
-    show() { this.win.document.querySelector('.slides .img').classList.remove('hidden'); },
+    hide() {
+      if (!this.win) return;
+      this.win.document.querySelector('.slides .img').classList.add('hidden');
+    },
+
+    show() {
+      if (!this.win) return;
+      this.win.document.querySelector('.slides .img').classList.remove('hidden');
+    },
+
     clear() {
       this.hide();
     },
@@ -401,10 +409,10 @@ const Controller = (function IIFE(ui) {
 
     state.slides = list;
     state.playing = true;
-
     if (state.dualMonitorMode) ui.slidesDualMonitor.start(state.slides[0]);
     else {
       ui.playlist.hide();
+      ui.hymnSearch.hide();
       ui.slides.start(state.slides[0]);
     }
   }
@@ -422,10 +430,11 @@ const Controller = (function IIFE(ui) {
   function controls(e) {
     if (!state.playing) return;
     if (state.current < state.slides.length - 1 && (e.keyCode === 32 || e.keyCode === 39)) {
-      // if (state.current >= state.slides.length - 1) endSlideshow();
-      ui.slides.setImg(state.slides[++state.current]);
+      if (state.dualMonitorMode) ui.slidesDualMonitor.setImg(state.slides[++state.current]);
+      else ui.slides.setImg(state.slides[++state.current]);
     } else if (e.keyCode === 37 && state.current > 0) {
-      ui.slides.setImg(state.slides[--state.current]);
+      if (state.dualMonitorMode) ui.slidesDualMonitor.setImg(state.slides[--state.current]);
+      else ui.slides.setImg(state.slides[--state.current]);
     } else if (e.keyCode === 27) {
       endSlideshow();
     }
