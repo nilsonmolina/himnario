@@ -129,7 +129,7 @@ const View = (function IIFE() {
         this.setImg(img);
         this.show();
       } else {
-        this.win = window.open('./slides.html', 'himnario slides', 'menubar=no');
+        this.win = window.open('./slides.html', 'himnario slides', 'menubar=no,width=800,height=400');
         this.win.addEventListener('DOMContentLoaded', () => {
           this.setImg(img);
           this.show();
